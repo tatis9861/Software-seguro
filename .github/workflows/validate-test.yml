@@ -1,0 +1,34 @@
+# Nombre del workflow que aparecerá en la pestaña "Actions" de GitHub
+name: Test workflow
+
+# Evento que dispara el workflow: se ejecutará en cada push a cualquier rama
+on: 
+  push:
+    branches:
+      - '*'  # Abarca todas las ramas (main, develop, feature/*, etc.)
+
+jobs:
+  code-validation:  # Nombre del job. Puedes tener varios jobs si necesitas.
+    runs-on: ubuntu-22.04  # Define el sistema operativo del runner (máquina virtual)
+
+    steps:
+      # 1️⃣ Paso: Clonar el código del repositorio
+      - name: Checkout code
+        uses: actions/checkout@4  # Usa la acción oficial para hacer checkout del código fuente
+
+      # 2️⃣ Paso: Instalar Go en el entorno del runner
+      - name: Setup Go
+        uses: actions/setup-go@v5  # Acción oficial para configurar Go
+        with:
+          go-version: '^1.18'  # Usa la versión 1.18 o superior compatible
+
+      # 3️⃣ Paso: Descargar dependencias y generar carpeta vendor
+      - name: Install dependencies
+        working-directory: ./github-tracker  # Define en qué carpeta ejecutar el comando
+        run: go mod vendor  # Genera el directorio vendor con todas las dependencias
+
+      # 4️⃣ Paso: Ejecutar pruebas unitarias del proyecto Go
+      - name: Check unit test
+        working-directory: ./github-tracker  # Ubicación del código
+        run: go test ./...  # Ejecuta todos los tests recursivamente
+        continue-on-error: false  # Si ocurre un fallo, el workflow se detiene (comportamiento deseado)
